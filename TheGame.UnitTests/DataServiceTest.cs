@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using TheGame.BootstrapService;
 using TheGame.DataService;
 using System;
+using System.Linq;
 
 namespace TheGame.UnitTests
 {
@@ -56,28 +57,6 @@ namespace TheGame.UnitTests
         {
             var allPlayers = await unitOfWork.Players.All();
             Assert.NotNull(allPlayers);
-        }
-
-        [TestCase(Common.Models.ResourceType.Coin, 72.0)]
-        public async Task AddResourceToANewPlayer(Common.Models.ResourceType resourceType, double ammount)
-        {
-            var player = new Common.Models.Player
-            {
-                DeviceId = Guid.NewGuid(),
-                IsOnline = false
-            };
-            await unitOfWork.Players.Add(player);
-            await unitOfWork.CompleteAsync();
-            player.Resources.Add(new Common.Models.Resource
-            {
-                PlayerId = player.Id,
-                ResourceType = resourceType,
-                ResourceValue = ammount
-            });
-            await unitOfWork.CompleteAsync();
-            player = await unitOfWork.Players.GetById(player.Id);
-            Assert.IsNotEmpty(player.Resources);
-
         }
     }
 }

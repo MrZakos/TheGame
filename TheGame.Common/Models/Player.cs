@@ -18,9 +18,10 @@ namespace TheGame.Common.Models
         [Required]
         public bool IsOnline { get; set; }
 
+        public DateTime RegisteredDate { get; set; } = DateTime.UtcNow;
+
+        public DateTime? LastUpdatedDate { get; set; }
+
         public virtual List<Resource> Resources { get; set; } = new List<Resource>();
-    }
-
- 
-
+    } 
 }

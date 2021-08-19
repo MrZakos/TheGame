@@ -16,11 +16,11 @@ namespace TheGame.DataService
     {
         protected TheGameDatabaseContext context;
         internal DbSet<T> dbSet;
-        public readonly ILogger _logger;
+        public ILogger<GenericRepository<T>> _logger;
 
         public GenericRepository(
             TheGameDatabaseContext context,
-            ILogger logger)
+            ILogger<GenericRepository<T>> logger)
         {
             this.context = context;
             this.dbSet = context.Set<T>();
@@ -38,24 +38,47 @@ namespace TheGame.DataService
             return true;
         }
 
-        public virtual Task<bool> Delete(int id)
+        public async virtual Task<bool> Delete(int id)
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task<IEnumerable<T>> All()
+        public async virtual Task<IEnumerable<T>> All()
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate)
+        public async Task<IEnumerable<T>> Find(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = "")
         {
-            return await dbSet.Where(predicate).ToListAsync();
+            IQueryable<T> query = dbSet;
+            IEnumerable<T> result;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            if (orderBy != null)
+            {
+                result = await orderBy(query).ToListAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                result = await query.ToListAsync().ConfigureAwait(false);
+            }
+            return result;
         }
 
-        public virtual Task<bool> Update(T entity)
+        public async virtual Task<bool> Update(T entity)
         {
-            throw new NotImplementedException();
+            await Task.Delay(1);
+            context.Entry(entity).State = EntityState.Modified;
+            return true;
         }
     }
 }

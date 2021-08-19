@@ -22,5 +22,4 @@ namespace TheGame.Common.Models
         [Required]
         public double ResourceValue { get; set; }
     }
-
 }

@@ -3,7 +3,7 @@ using TheGame.Common.Models;
 
 namespace TheGame.DataService
 {
-    public interface IPlayerRepository : IGenericRepository<Player> , IDisposable
+    public interface IResourceRepository : IGenericRepository<Resource> , IDisposable
     {
 
     }

@@ -3,29 +3,23 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TheGame.Common.Models;
 
 namespace TheGame.DataService
 {
     /// <summary>
-    /// PlayerRepository
+    /// Resource Repository
     /// </summary>
-    public class PlayerRepository : GenericRepository<Player>, IPlayerRepository
+    public class ResourceRepository : GenericRepository<Resource>, IResourceRepository
     {
-        public PlayerRepository(
+        public ResourceRepository(
             TheGameDatabaseContext context,
-            ILogger<PlayerRepository> logger) : base(context, logger)
+            ILogger<ResourceRepository> logger) : base(context, logger)
         {
         }
 
-        public override async Task<Player> GetById(int id)
-        {
-            return await dbSet.Include(x => x.Resources).SingleOrDefaultAsync(i => i.Id == id);
-        }
-
-        public override async Task<IEnumerable<Player>> All()
+        public override async Task<IEnumerable<Resource>> All()
         {
             _logger.LogInformation("getting all players");
             try
@@ -35,7 +29,7 @@ namespace TheGame.DataService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{Repo} All function error", typeof(PlayerRepository));
-                return new List<Player>();
+                return new List<Resource>();
             }
         }
 
@@ -59,6 +53,7 @@ namespace TheGame.DataService
         }
 
         private bool disposed = false;
+
         protected virtual void Dispose(bool disposing)
         {
             if (!this.disposed)

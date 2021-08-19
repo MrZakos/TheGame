@@ -5,7 +5,10 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
 using System.IO;
+using TheGame.BLL;
+using TheGame.DAL;
 using TheGame.DataService;
+using TheGame.WebSocketService;
 
 namespace TheGame.BootstrapService
 {
@@ -28,7 +31,7 @@ namespace TheGame.BootstrapService
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    RegisterServices(services);
+                    RegisterServices(Configuration,services);
                 })
                 .UseSerilog()
                 .Build();
@@ -43,11 +46,17 @@ namespace TheGame.BootstrapService
                                                                     .AddEnvironmentVariables();
 
 
-        public static void RegisterServices(IServiceCollection services)
+        public static void RegisterServices(IConfiguration configuration,IServiceCollection services)
         {
-            var connectionString = Configuration["ConnectionStrings:Sqlite"];
+            var connectionString = configuration["ConnectionStrings:Sqlite"];
             services.AddDbContext<TheGameDatabaseContext>(options => options.UseSqlite(connectionString));
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IResourceRepository, ResourceRepository>();
+            services.AddTransient<IPlayerRepository, PlayerRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();         
+            services.AddTransient<DataAccessLayer>();
+            services.AddTransient<BusinessLogicLayer>();
+            services.AddSingleton<WebSocketConnectionManager>();
+
         }
     }
 }

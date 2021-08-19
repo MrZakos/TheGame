@@ -9,8 +9,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TheGame.BLL\TheGame.BLL.csproj" />
+    <ProjectReference Include="..\TheGame.BootstrapService\TheGame.BootstrapService.csproj" />
     <ProjectReference Include="..\TheGame.Common\TheGame.Common.csproj" />
     <ProjectReference Include="..\TheGame.WebSocketService\TheGame.WebSocketService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="logs\" />
   </ItemGroup>
 
 </Project>

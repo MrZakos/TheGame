@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
@@ -15,8 +14,8 @@
 
   <ItemGroup>
     <Folder Include="Interfaces\" />
-    <Folder Include="Extension\" />
-    <Folder Include="Exception\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Exceptions\" />
   </ItemGroup>
 
 </Project>

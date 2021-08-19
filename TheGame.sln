@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.Server", "TheGame.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.WebSocketService", "TheGame.WebSocketService\TheGame.WebSocketService.csproj", "{50372796-1E3F-4BD7-84D9-74C4F0E434D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.DAL", "TheGame.DAL\TheGame.DAL.csproj", "{389AF925-9719-48D4-ADF0-96637200F883}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.BLL", "TheGame.BLL\TheGame.BLL.csproj", "{5956F027-49C1-4C4A-9D01-0916A81A9E9D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +60,14 @@ Global
 		{50372796-1E3F-4BD7-84D9-74C4F0E434D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50372796-1E3F-4BD7-84D9-74C4F0E434D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50372796-1E3F-4BD7-84D9-74C4F0E434D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{389AF925-9719-48D4-ADF0-96637200F883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{389AF925-9719-48D4-ADF0-96637200F883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{389AF925-9719-48D4-ADF0-96637200F883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{389AF925-9719-48D4-ADF0-96637200F883}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5956F027-49C1-4C4A-9D01-0916A81A9E9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5956F027-49C1-4C4A-9D01-0916A81A9E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5956F027-49C1-4C4A-9D01-0916A81A9E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5956F027-49C1-4C4A-9D01-0916A81A9E9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
