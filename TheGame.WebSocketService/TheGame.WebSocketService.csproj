@@ -9,4 +9,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TheGame.Common\TheGame.Common.csproj" />
+  </ItemGroup>
+
 </Project>

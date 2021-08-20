@@ -49,7 +49,7 @@ namespace TheGame.BootstrapService
         public static void RegisterServices(IConfiguration configuration,IServiceCollection services)
         {
             var connectionString = configuration["ConnectionStrings:Sqlite"];
-            services.AddDbContext<TheGameDatabaseContext>(options => options.UseSqlite(connectionString));
+            services.AddDbContext<TheGameDatabaseContext>(options => options.UseSqlite(connectionString),ServiceLifetime.Transient);
             services.AddTransient<IResourceRepository, ResourceRepository>();
             services.AddTransient<IPlayerRepository, PlayerRepository>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();         

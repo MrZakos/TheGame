@@ -74,11 +74,9 @@ namespace TheGame.DataService
             return result;
         }
 
-        public async virtual Task<bool> Update(T entity)
+        public void Update(T entity)
         {
-            await Task.Delay(1);
             context.Entry(entity).State = EntityState.Modified;
-            return true;
         }
     }
 }

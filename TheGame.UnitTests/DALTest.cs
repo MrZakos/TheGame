@@ -21,12 +21,15 @@ namespace TheGame.UnitTests
         [Test]
         public async Task Test()
         {
-            var a = await dal.IsPlayerExistsAsync(1);
-            var b = await dal.IsPlayerExistsAsync(2);
-            var c = await dal.FindPlayerByDeviceIdAsync(new System.Guid("83ED631F-7E78-45E6-B323-32FFCB29AA43"));
-            var d = await dal.IsPlayerByDeviceIdExistsAsync(new System.Guid("83ED631F-7E78-45E6-B323-32FFCB29AA44"));
-            await dal.AddOrUpdateResourceForPlayer(1, Common.Models.ResourceType.Coin, 10);
-            await dal.AddOrUpdateResourceForPlayer(1, Common.Models.ResourceType.Coin, 500);
+            var player = await dal.RegisterPlayerAsync(System.Guid.NewGuid(), false);
+            var a = await dal.IsPlayerExistsAsync(player.Id);
+            var b = await dal.IsPlayerExistsAsync(50000);
+            var c = await dal.FindPlayerByDeviceIdAsync(player.DeviceId);
+            var d = await dal.IsPlayerByDeviceIdExistsAsync(System.Guid.NewGuid());
+            await dal.AddOrUpdateResourceForPlayerAsync(player.Id, Common.Models.ResourceType.Coin, 10);
+            await dal.AddOrUpdateResourceForPlayerAsync(player.Id, Common.Models.ResourceType.Coin, 50);
+            await dal.AddOrUpdateResourceForPlayerAsync(1, Common.Models.ResourceType.Roll, 50);
+            await dal.AddOrUpdateResourceForPlayerAsync(1, Common.Models.ResourceType.Roll, 200);
         }
     }
 }

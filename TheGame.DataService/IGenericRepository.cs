@@ -16,7 +16,7 @@ namespace TheGame.DataService
         Task<T> GetById(int id);
         Task<bool> Add(T entity);
         Task<bool> Delete(int id);
-        Task<bool> Update(T entity);
+        void Update(T entity);
         Task<IEnumerable<T>> Find(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = "");
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using TheGame.BootstrapService;
 
@@ -30,23 +31,22 @@ namespace TheGame.Server
         {
             services.AddControllers();                                                              // 
             services.Configure<KestrelServerOptions>(Configuration.GetSection("Kestrel"));          // configure KestrelServerOptions from appSettings
-            Bootstrap.RegisterServices(Configuration,services);                                     // register our application services
+            Bootstrap.RegisterServices(Configuration, services);                                     // register our application services
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // enable websockets
-            var webSocketOptions = new WebSocketOptions()
-            {
-                KeepAliveInterval = TimeSpan.FromSeconds(120),
-            };
-            app.UseWebSockets(webSocketOptions);
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+            // enable websockets
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(120)
+            };
+            app.UseWebSockets(webSocketOptions);
 
             // configure static files folder, this allow us to show startup.html on startup
             app.UseFileServer(new FileServerOptions
@@ -59,11 +59,9 @@ namespace TheGame.Server
             // Serilog takes over all default server logs
             app.UseSerilogRequestLogging();
 
-            // regular middleware which you see in every core-webapp project
+            // regular middleware
             app.UseHttpsRedirection();
             app.UseRouting();
-            app.UseAuthorization();
-            app.UseDefaultFiles();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

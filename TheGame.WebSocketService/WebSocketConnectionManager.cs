@@ -3,140 +3,186 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheGame.Common.Models;
 
 namespace TheGame.WebSocketService
 {
     /// <summary>
     /// Manage websocket connections
     ///  - keeping records on all active users
-    ///  - allows to subscribe to onOpen/onClose/onMessage events
+    ///  - allows events subscription (onOpen/onClose/onMessage)
     /// </summary>
     public class WebSocketConnectionManager
     {
-        private ConcurrentDictionary<Guid, WebSocket> _clients { get; set; } = new ConcurrentDictionary<Guid, WebSocket>();
+        private ConcurrentDictionary<Guid, SocketConnectionSession> _clients { get; set; } = new ConcurrentDictionary<Guid, SocketConnectionSession>();
         private readonly ILogger<WebSocketConnectionManager> _logger;
+        private readonly int _clientMessageBufferSize = 1024;
 
         public int OnlineClients => _clients.Count;
         public bool IsExists(Guid id) => _clients.ContainsKey(id);
+        public bool IsDeviceExists(Guid deviceId) => _clients.ToList().Exists(x => x.Value.HasConnectedPlayer && x.Value.Player.DeviceId == deviceId);
+        public SocketConnectionSession GetByDevice(Guid deviceId) => _clients.ToList().FirstOrDefault(x => x.Value.HasConnectedPlayer && x.Value.Player.DeviceId == deviceId).Value;
 
         public WebSocketConnectionManager(ILogger<WebSocketConnectionManager> logger)
         {
             _logger = logger;
         }
 
-        public async Task SubscribeAsync(Action<WebSocketConnectionManager> connection)
+        public void Subscribe(Action<WebSocketConnectionManager> connection)
         {
             connection(this);
         }
 
         // Events
-        public Action<WebSocket, Guid> OnOpen { get; set; } = (webSocket, clientId) => { };
-        public Action<WebSocket, Guid> OnClose { get; set; } = (webSocket, clientId) => { };
-        public Action<WebSocket, Guid, string> OnMessage { get; set; } = (webSocket, clientId, message) => { };
-        public Action<WebSocket, Guid, byte[]> OnBinary { get; set; } = (webSocket, clientId, bytes) => { };
+        public Action<SocketConnectionSession> OnOpen { get; set; } = (session) => { };
+        public Action<SocketConnectionSession> OnClose { get; set; } = (session) => { };
+        public Action<SocketConnectionSession, string> OnMessage { get; set; } = (session, message) => { };
+        public Action<SocketConnectionSession, byte[]> OnBinary { get; set; } = (session, bytes) => { };
 
         /// <summary>
         /// Send a message to a connceted client
         /// </summary>
-        /// <param name="socket"></param>
+        /// <param name="session"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public async Task SendAsync(WebSocket socket, string message)
+        public async Task SendMessageAsync(SocketConnectionSession session, string message)
         {
-            if (socket.State == WebSocketState.Open)
+            if (session.Socket.State == WebSocketState.Open)
             {
-                await socket.SendAsync(
-                  new ArraySegment<byte>(Encoding.ASCII.GetBytes(message), 0, message.Length),
-                  WebSocketMessageType.Text,
-                  true,
-                  CancellationToken.None);
+                try
+                {
+                    await session.Socket.SendAsync(
+                          new ArraySegment<byte>(Encoding.ASCII.GetBytes(message), 0, message.Length),
+                          WebSocketMessageType.Text,
+                          true,
+                          CancellationToken.None);
+                    _logger.LogInformation($"{session} message sent {message}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"${session} message sending {message} failed");
+                }
             }
-        }
-
-        public async Task SendAsync(Guid clientId, string message)
-        {
-            WebSocket clientSocket;
-            if (_clients.TryGetValue(clientId, out clientSocket))
+            else
             {
-                await SendAsync(clientSocket, message);
+                _logger.LogInformation($"{session} could not sent a message because socket status is {session.Socket.State}");
             }
         }
 
         /// <summary>
-        /// Force close connection with a connected client
+        /// Send a message to a client
         /// </summary>
-        /// <param name="socket"></param>
-        public void AbortConnection(WebSocket socket, string message)
+        /// <param name="sessionId"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public async Task SendMessageAsync(Guid sessionId, string message)
         {
-            if (socket.State == WebSocketState.Open)
+            SocketConnectionSession session;
+            if (_clients.TryGetValue(sessionId, out session))
             {
-                socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, message, CancellationToken.None);
-            } 
+                await SendMessageAsync(session, message);
+            }
+            else
+            {
+                _logger.LogInformation($"${nameof(SendMessageAsync)} - could not find sessionId={sessionId}");
+            }
         }
 
         /// <summary>
-        /// Force close connection with a connected client
+        /// /// Close client connection
         /// </summary>
+        /// <param name="session"></param>
         /// <param name="clientId"></param>
-        public void AbortConnection(Guid clientId, string message)
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public async Task AbortConnectionAsync(SocketConnectionSession session, string message)
         {
-            WebSocket clientSocket;
-            if (_clients.TryGetValue(clientId, out clientSocket))
+            if (session.Socket.State == WebSocketState.Open)
             {
-                AbortConnection(clientSocket, message);
-                _clients.TryRemove(clientId, out clientSocket);
+                try
+                {
+                    await session.Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, message, CancellationToken.None);
+                    _logger.LogInformation($"{session} forced closed");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"{session} forced closed failed");
+                }
             }
-
         }
 
         /// <summary>
-        /// Upgrading a HTTP connection to a WebSocket connection and connect to it
+        /// /// Close client connection
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public async Task AbortConnectionAsync(Guid sessionId, string message)
+        {
+            SocketConnectionSession session;
+            if (_clients.TryGetValue(sessionId, out session))
+            {
+                await AbortConnectionAsync(session, message);
+            }
+            else
+            {
+                _logger.LogInformation($"${nameof(AbortConnectionAsync)} - could not find sessionId={sessionId}");
+            }
+        }
+
+        /// <summary>
+        /// Accept an incoming websocket connection request
         /// </summary>
         /// <param name="httpContext"></param>
         /// <returns></returns>
-        public async Task ConnectAsync(HttpContext httpContext, Guid clientId)
+        public async Task AcceptAndConnectIncomingWebSocketRequestAsync(HttpContext httpContext)
         {
-            using WebSocket webSocket = await httpContext.WebSockets.AcceptWebSocketAsync();
-            _clients.TryAdd(clientId, webSocket);
-            OnOpen(webSocket, clientId);
-            await ListenToClientEventAsync(webSocket, async (result, buffer) =>
+            using WebSocket socket = await httpContext.WebSockets.AcceptWebSocketAsync();
+            var webSocketConnectionSession = new SocketConnectionSession
             {
-                await Task.Delay(1);
+                Socket = socket,
+                HttpContext = httpContext
+            };
+            _clients.TryAdd(webSocketConnectionSession.Id, webSocketConnectionSession);
+            OnOpen(webSocketConnectionSession);
+            await RecieveMessageAsync(webSocketConnectionSession, async (result, buffer) =>
+            {
                 switch (result.MessageType)
                 {
                     case WebSocketMessageType.Text:
-                        var s = Encoding.UTF8.GetString(buffer);
-                        var msg = s.Substring(0, Math.Max(0, s.IndexOf('\0')));
-                        OnMessage(webSocket, clientId, msg);
+                        var bufferStringData = Encoding.UTF8.GetString(buffer);
+                        var msg = bufferStringData.Substring(0, Math.Max(0, bufferStringData.IndexOf('\0')));
+                        OnMessage(webSocketConnectionSession, msg);
                         break;
                     case WebSocketMessageType.Binary:
-                        OnBinary(webSocket, clientId, buffer);
+                        OnBinary(webSocketConnectionSession, buffer);
                         break;
                     case WebSocketMessageType.Close:
-                        WebSocket clientSocket;
-                        _clients.TryRemove(clientId,out clientSocket);
-                        OnClose(webSocket, clientId);
+                        SocketConnectionSession sesion;
+                        _clients.TryRemove(webSocketConnectionSession.Id, out sesion);
+                        OnClose(webSocketConnectionSession);
                         break;
                 }
             });
         }
 
         /// <summary>
-        /// Listen to client event - a message received or connection clsoed
+        /// Recieve client's incoming - message /connection clsoed
         /// </summary>
         /// <param name="socket"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        private async Task ListenToClientEventAsync(WebSocket socket, Action<WebSocketReceiveResult, byte[]> handler)
+        private async Task RecieveMessageAsync(SocketConnectionSession session, Action<WebSocketReceiveResult, byte[]> handler)
         {
-            var buffer = new byte[1024];
-            while (socket.State == WebSocketState.Open)
+            var buffer = new byte[_clientMessageBufferSize];
+            while (session.Socket.State == WebSocketState.Open)
             {
-                var result = await socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer), cancellationToken: CancellationToken.None);
+                var result = await session.Socket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer), cancellationToken: CancellationToken.None);
                 handler(result, buffer);
             }
         }

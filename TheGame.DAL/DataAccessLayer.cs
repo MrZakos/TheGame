@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TheGame.Common.Models;
 using TheGame.DataService;
@@ -13,6 +11,7 @@ namespace TheGame.DAL
     {
         private readonly ILogger<DataAccessLayer> _log;
         private readonly IUnitOfWork _unitOfWork;
+        private const string _defaultPlayerIncludeProperties = "Resources";
 
         public DataAccessLayer(
             ILogger<DataAccessLayer> logger,
@@ -33,12 +32,18 @@ namespace TheGame.DAL
             return player != null;
         }
 
+        public async Task<Player> GetPlayerAsync(int playerId)
+        {
+            return await _unitOfWork.Players.GetById(playerId);
+        }
+
         public async Task SetOnlineStatusAsync(int playerId, bool isOnline)
         {
             var player = await _unitOfWork.Players.GetById(playerId);
             player.IsOnline = isOnline;
-            await _unitOfWork.Players.Update(player);
+            _unitOfWork.Players.Update(player);
             await _unitOfWork.CompleteAsync();
+            _log.LogInformation($@"{player.DeviceId} was set to {(isOnline ? "online" : "offline")}");
         }
 
         public async Task<bool> IsPlayerByDeviceIdExistsAsync(Guid deviceId)
@@ -49,11 +54,11 @@ namespace TheGame.DAL
 
         public async Task<Player> FindPlayerByDeviceIdAsync(Guid deviceId)
         {
-            var player = await _unitOfWork.Players.Find(x => x.DeviceId == deviceId, null, Common.Constants.STRING_Resources);
+            var player = await _unitOfWork.Players.Find(x => x.DeviceId == deviceId, null, _defaultPlayerIncludeProperties);
             return player.FirstOrDefault();
         }
 
-        public async Task AddOrUpdateResourceForPlayer(int playerId,ResourceType resourceType,double resourceValue)
+        public async Task AddOrUpdateResourceForPlayerAsync(int playerId, ResourceType resourceType, double resourceValue)
         {
             var player = await _unitOfWork.Players.GetById(playerId);
             var playerResource = player.Resources.FirstOrDefault(x => x.ResourceType == resourceType);
@@ -71,12 +76,13 @@ namespace TheGame.DAL
                     ResourceValue = resourceValue
                 });
             }
-            await _unitOfWork.Players.Update(player);
+            _unitOfWork.Players.Update(player);
             await _unitOfWork.CompleteAsync();
+            _log.LogInformation($"{resourceValue} {resourceValue}  has been added to player ({player})");
         }
 
-        public async Task<Player> RegisterPlayerAsync(Guid deviceId,bool isOnline)
-        {  
+        public async Task<Player> RegisterPlayerAsync(Guid deviceId, bool isOnline)
+        {
             var playerByDevice = await FindPlayerByDeviceIdAsync(deviceId);
             var playerExists = playerByDevice != null;
             if (playerExists)
@@ -92,6 +98,7 @@ namespace TheGame.DAL
                 };
                 await _unitOfWork.Players.Add(newPlayer);
                 await _unitOfWork.CompleteAsync();
+                _log.LogInformation($"player ({newPlayer}) had been regiserted");
                 return newPlayer;
             }
         }

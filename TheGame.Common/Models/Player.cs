@@ -18,10 +18,12 @@ namespace TheGame.Common.Models
         [Required]
         public bool IsOnline { get; set; }
 
-        public DateTime RegisteredDate { get; set; } = DateTime.UtcNow;
+        public DateTime RegisteredDateUTC { get; set; } = DateTime.UtcNow;
 
-        public DateTime? LastUpdatedDate { get; set; }
+        public DateTime? LastUpdatedDateUTC { get; set; }
 
         public virtual List<Resource> Resources { get; set; } = new List<Resource>();
+
+        public override string ToString() =>$"[{Id}-{DeviceId}]";
     } 
 }

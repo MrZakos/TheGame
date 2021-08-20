@@ -27,7 +27,6 @@ namespace TheGame.DataService
 
         public override async Task<IEnumerable<Player>> All()
         {
-            _logger.LogInformation("getting all players");
             try
             {
                 return await dbSet.ToListAsync();
@@ -56,25 +55,6 @@ namespace TheGame.DataService
                 _logger.LogError(ex, "{Repo} Delete function error", typeof(PlayerRepository));
                 return false;
             }
-        }
-
-        private bool disposed = false;
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposed)
-            {
-                if (disposing)
-                {
-                    context.Dispose();
-                }
-            }
-            this.disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }
