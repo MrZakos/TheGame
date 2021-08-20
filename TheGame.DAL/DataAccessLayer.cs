@@ -42,7 +42,7 @@ namespace TheGame.DAL
             var player = await _unitOfWork.Players.GetById(playerId);
             player.IsOnline = isOnline;
             _unitOfWork.Players.Update(player);
-            await _unitOfWork.CompleteAsync();
+            await _unitOfWork.CommitAsync();
             _log.LogInformation($@"{player.DeviceId} was set to {(isOnline ? "online" : "offline")}");
         }
 
@@ -77,8 +77,8 @@ namespace TheGame.DAL
                 });
             }
             _unitOfWork.Players.Update(player);
-            await _unitOfWork.CompleteAsync();
-            _log.LogInformation($"{resourceValue} {resourceValue}  has been added to player ({player})");
+            await _unitOfWork.CommitAsync();
+            _log.LogInformation($"{resourceValue} {resourceType.ToString().ToLower()}s had been added to player {player}");
         }
 
         public async Task<Player> RegisterPlayerAsync(Guid deviceId, bool isOnline)
@@ -97,7 +97,7 @@ namespace TheGame.DAL
                     IsOnline = isOnline
                 };
                 await _unitOfWork.Players.Add(newPlayer);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitAsync();
                 _log.LogInformation($"player ({newPlayer}) had been regiserted");
                 return newPlayer;
             }

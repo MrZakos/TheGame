@@ -11,8 +11,9 @@ namespace TheGame.Common.Models
         public WebSocket Socket { get; set; }
         public HttpContext HttpContext { get; set; }
         public DateTime ConnectedDateUTC { get; set; } = DateTime.UtcNow;
-        public bool HasConnectedPlayer => Player != null;
+        public DateTime DisconnectedDateUTC { get; set; }
+        public bool IsLoggedIn => Player != null;
 
-        public override string ToString() => Player != null ? $"{Id} ({Player})" :Id.ToString();        
+        public override string ToString() => Player != null ? $"{Id} {Player}" :Id.ToString();        
     }
 }

@@ -3,28 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.Common", "TheGame.Common\TheGame.Common.csproj", "{3DDFC841-EF9F-4C03-AA73-D65D3E3DA1C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.Common", "TheGame.Common\TheGame.Common.csproj", "{3DDFC841-EF9F-4C03-AA73-D65D3E3DA1C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.ClientConsole", "TheGame.ClientConsole\TheGame.ClientConsole.csproj", "{E5B5AE38-2B45-4C50-AC10-B4D534AA6905}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.UnitTests", "TheGame.UnitTests\TheGame.UnitTests.csproj", "{E640D8F8-898B-4F38-9914-A9DE889F8F7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.UnitTests", "TheGame.UnitTests\TheGame.UnitTests.csproj", "{E640D8F8-898B-4F38-9914-A9DE889F8F7F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{567B7133-BF42-4B72-BE59-D36B59889A5C}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.DataService", "TheGame.DataService\TheGame.DataService.csproj", "{3E4A6D5F-BD65-4B17-BB50-D4450FC42A8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.DataService", "TheGame.DataService\TheGame.DataService.csproj", "{3E4A6D5F-BD65-4B17-BB50-D4450FC42A8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.BootstrapService", "TheGame.BootstrapService\TheGame.BootstrapService.csproj", "{0CD37B47-5E3D-45C6-9D49-B62FC59052B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.BootstrapService", "TheGame.BootstrapService\TheGame.BootstrapService.csproj", "{0CD37B47-5E3D-45C6-9D49-B62FC59052B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.Server", "TheGame.Server\TheGame.Server.csproj", "{D1C9F52E-4BE3-45C8-801E-D6EF03002935}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.Server", "TheGame.Server\TheGame.Server.csproj", "{D1C9F52E-4BE3-45C8-801E-D6EF03002935}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.WebSocketService", "TheGame.WebSocketService\TheGame.WebSocketService.csproj", "{50372796-1E3F-4BD7-84D9-74C4F0E434D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.WebSocketService", "TheGame.WebSocketService\TheGame.WebSocketService.csproj", "{50372796-1E3F-4BD7-84D9-74C4F0E434D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.DAL", "TheGame.DAL\TheGame.DAL.csproj", "{389AF925-9719-48D4-ADF0-96637200F883}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.DAL", "TheGame.DAL\TheGame.DAL.csproj", "{389AF925-9719-48D4-ADF0-96637200F883}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.BLL", "TheGame.BLL\TheGame.BLL.csproj", "{5956F027-49C1-4C4A-9D01-0916A81A9E9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.BLL", "TheGame.BLL\TheGame.BLL.csproj", "{5956F027-49C1-4C4A-9D01-0916A81A9E9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.ClientConsole", "TheGame.ClientConsole\TheGame.ClientConsole.csproj", "{16CCD4AA-008F-4D9D-ADF1-6C1305EEA139}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGame.ClientConsoleRunner", "TheGame.ClientConsoleRunner\TheGame.ClientConsoleRunner.csproj", "{6E310D2A-F28B-443D-B5CA-866AB4DF4E47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,10 +38,6 @@ Global
 		{3DDFC841-EF9F-4C03-AA73-D65D3E3DA1C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DDFC841-EF9F-4C03-AA73-D65D3E3DA1C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DDFC841-EF9F-4C03-AA73-D65D3E3DA1C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E5B5AE38-2B45-4C50-AC10-B4D534AA6905}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E5B5AE38-2B45-4C50-AC10-B4D534AA6905}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E5B5AE38-2B45-4C50-AC10-B4D534AA6905}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E5B5AE38-2B45-4C50-AC10-B4D534AA6905}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E640D8F8-898B-4F38-9914-A9DE889F8F7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E640D8F8-898B-4F38-9914-A9DE889F8F7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E640D8F8-898B-4F38-9914-A9DE889F8F7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -68,6 +66,14 @@ Global
 		{5956F027-49C1-4C4A-9D01-0916A81A9E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5956F027-49C1-4C4A-9D01-0916A81A9E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5956F027-49C1-4C4A-9D01-0916A81A9E9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16CCD4AA-008F-4D9D-ADF1-6C1305EEA139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16CCD4AA-008F-4D9D-ADF1-6C1305EEA139}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16CCD4AA-008F-4D9D-ADF1-6C1305EEA139}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16CCD4AA-008F-4D9D-ADF1-6C1305EEA139}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E310D2A-F28B-443D-B5CA-866AB4DF4E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E310D2A-F28B-443D-B5CA-866AB4DF4E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E310D2A-F28B-443D-B5CA-866AB4DF4E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E310D2A-F28B-443D-B5CA-866AB4DF4E47}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

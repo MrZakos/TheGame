@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -25,8 +24,8 @@ namespace TheGame.WebSocketService
 
         public int OnlineClients => _clients.Count;
         public bool IsExists(Guid id) => _clients.ContainsKey(id);
-        public bool IsDeviceExists(Guid deviceId) => _clients.ToList().Exists(x => x.Value.HasConnectedPlayer && x.Value.Player.DeviceId == deviceId);
-        public SocketConnectionSession GetByDevice(Guid deviceId) => _clients.ToList().FirstOrDefault(x => x.Value.HasConnectedPlayer && x.Value.Player.DeviceId == deviceId).Value;
+        public bool IsDeviceExists(Guid deviceId) => _clients.ToList().Exists(x => x.Value.IsLoggedIn && x.Value.Player.DeviceId == deviceId);
+        public SocketConnectionSession GetByDevice(Guid deviceId) => _clients.ToList().FirstOrDefault(x => x.Value.IsLoggedIn && x.Value.Player.DeviceId == deviceId).Value;
 
         public WebSocketConnectionManager(ILogger<WebSocketConnectionManager> logger)
         {
@@ -70,7 +69,7 @@ namespace TheGame.WebSocketService
             }
             else
             {
-                _logger.LogInformation($"{session} could not sent a message because socket status is {session.Socket.State}");
+                _logger.LogInformation($"{session} could not sent a message because socket state is {session.Socket.State}");
             }
         }
 
@@ -140,7 +139,7 @@ namespace TheGame.WebSocketService
         /// </summary>
         /// <param name="httpContext"></param>
         /// <returns></returns>
-        public async Task AcceptAndConnectIncomingWebSocketRequestAsync(HttpContext httpContext)
+        public async Task HandleWebSocketRequestAsync(HttpContext httpContext)
         {
             using WebSocket socket = await httpContext.WebSockets.AcceptWebSocketAsync();
             var webSocketConnectionSession = new SocketConnectionSession
@@ -155,14 +154,14 @@ namespace TheGame.WebSocketService
                 switch (result.MessageType)
                 {
                     case WebSocketMessageType.Text:
-                        var bufferStringData = Encoding.UTF8.GetString(buffer);
-                        var msg = bufferStringData.Substring(0, Math.Max(0, bufferStringData.IndexOf('\0')));
+                        var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
                         OnMessage(webSocketConnectionSession, msg);
                         break;
                     case WebSocketMessageType.Binary:
                         OnBinary(webSocketConnectionSession, buffer);
                         break;
                     case WebSocketMessageType.Close:
+                        webSocketConnectionSession.DisconnectedDateUTC = DateTime.UtcNow;
                         SocketConnectionSession sesion;
                         _clients.TryRemove(webSocketConnectionSession.Id, out sesion);
                         OnClose(webSocketConnectionSession);

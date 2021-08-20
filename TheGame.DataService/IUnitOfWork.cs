@@ -6,7 +6,7 @@ namespace TheGame.DataService
     public interface IUnitOfWork : IDisposable
     {
         IPlayerRepository Players { get; }
-        Task CompleteAsync();
+        Task CommitAsync();
         Task EnsureCreated();
     }
 }

@@ -53,7 +53,7 @@ namespace TheGame.BLL
                 context.Response.StatusCode = 400;
                 return;
             }
-            await _webSocketConnectionManager.AcceptAndConnectIncomingWebSocketRequestAsync(httpContext);
+            await _webSocketConnectionManager.HandleWebSocketRequestAsync(httpContext);
         }
 
         public async Task ProcessOnClientWebSocketMessageReceivedAsync(SocketConnectionSession session, string message)
@@ -65,16 +65,17 @@ namespace TheGame.BLL
 
                 // model validation
                 model = JsonSerializer.Deserialize<WebSocketServerClientDTO>(message);
-                WebSocketServerClientEventCode eventCode;
-                if (!Enum.TryParse(model.Event, out eventCode))
-                {
-                    await SendUnSuccessResponseAsync(Common.Constants.STRING_UnknownEvent);
-                    return;
-                }
 
                 if (model == null)
                 {
                     await SendUnSuccessResponseAsync(Common.Constants.STRING_InvalidRequest);
+                    return;
+                }
+
+                WebSocketServerClientEventCode eventCode;
+                if (!Enum.TryParse(model.Event, out eventCode))
+                {
+                    await SendUnSuccessResponseAsync(Common.Constants.STRING_UnknownEvent);
                     return;
                 }
 
@@ -85,13 +86,13 @@ namespace TheGame.BLL
                         await ProcessLoginAsync();
                         break;
                     case WebSocketServerClientEventCode.UpdateResources:
-                        await ProcessSendGiftAsync();
-                        break;
-                    case WebSocketServerClientEventCode.SendGift:
                         await ProcessUpdateResourcesAsync();
                         break;
+                    case WebSocketServerClientEventCode.SendGift:
+                        await ProcessSendGiftAsync();
+                        break;
                     default:
-                        _logger.LogError($"{session} {nameof(ProcessOnClientWebSocketMessageReceivedAsync)} received unknown event code ${model.EventCode}");
+                        _logger.LogError($"{session} {nameof(ProcessOnClientWebSocketMessageReceivedAsync)} received unknown event code ${eventCode}");
                         break;
                 }
             }
@@ -129,20 +130,19 @@ namespace TheGame.BLL
                 var response = new WebSocketServerClientDTO
                 {
                     RequestId = model.RequestId,
-                    Event = model.EventCode.ToString(),
+                    Event = model.Event,
                     Success = true,
                     LoginResponse = new LoginResponse
                     {
                         PlayerId = player.Id
                     }
                 };
-                await SendResponseAsync(response);
+                await SendResponseAsync(session, response);
             }
 
             async Task ProcessUpdateResourcesAsync()
             {
                 // model validation
-
                 ResourceType resourceType = default(ResourceType);
                 var isValidModel =
                     model.UpdateResourcesRequest != null &&
@@ -158,24 +158,25 @@ namespace TheGame.BLL
                 }
 
                 // login validation
-                if (!session.HasConnectedPlayer)
+                if (!session.IsLoggedIn)
                 {
                     await SendUnSuccessResponseAsync(Common.Constants.STRING_ThisOperationRequireToBeLoggedIn);
                     return;
                 }
 
+                // update player's resource & send him the balance
                 await _dal.AddOrUpdateResourceForPlayerAsync(session.Player.Id, resourceType, model.UpdateResourcesRequest.ResourceValue.Value);
                 var response = new WebSocketServerClientDTO
                 {
                     RequestId = model.RequestId,
-                    Event = model.EventCode.ToString(),
+                    Event = model.Event,
                     Success = true,
                     UpdateResourcesResponse = new UpdateResourcesResponse
                     {
                         Balance = model.UpdateResourcesRequest.ResourceValue.Value
                     }
                 };
-                await SendResponseAsync(response);
+                await SendResponseAsync(session, response);
             }
 
             async Task ProcessSendGiftAsync()
@@ -186,7 +187,7 @@ namespace TheGame.BLL
                     model.SendGiftRequest != null &&
                     model.SendGiftRequest.FriendPlayerId.HasValue &&
                     model.SendGiftRequest.ResourceType != null &&
-                    Enum.TryParse(model.UpdateResourcesRequest.ResourceType, out resourceType) &&
+                    Enum.TryParse(model.SendGiftRequest.ResourceType, out resourceType) &&
                     model.SendGiftRequest.ResourceValue.HasValue &&
                     model.SendGiftRequest.ResourceValue.Value > 0;
 
@@ -197,40 +198,48 @@ namespace TheGame.BLL
                 }
 
                 // login validation
-                if (!session.HasConnectedPlayer)
+                if (!session.IsLoggedIn)
                 {
                     await SendUnSuccessResponseAsync(Common.Constants.STRING_ThisOperationRequireToBeLoggedIn);
                     return;
                 }
 
                 // find friend player
-                var player = await _dal.GetPlayerAsync(model.SendGiftRequest.FriendPlayerId.Value);
-                var isFriendPlayerExists = player != null;
+                var friendPlayer = await _dal.GetPlayerAsync(model.SendGiftRequest.FriendPlayerId.Value);
+                var isFriendPlayerExists = friendPlayer != null;
                 if (!isFriendPlayerExists)
                 {
                     await SendUnSuccessResponseAsync(Common.Constants.STRING_PlayerDoesNotExists);
                     return;
                 }
                 // update friend player resource
-                var friendPlayerResource = player.Resources.FirstOrDefault(x => x.ResourceType == resourceType);
+                var friendPlayerResource = friendPlayer.Resources.FirstOrDefault(x => x.ResourceType == resourceType);
                 var friendPlayerResourceExists = friendPlayerResource != null;
                 var newBalance = friendPlayerResourceExists ? (friendPlayerResource.ResourceValue + model.SendGiftRequest.ResourceValue.Value) : model.SendGiftRequest.ResourceValue.Value;
                 await _dal.AddOrUpdateResourceForPlayerAsync(
-                    session.Player.Id,
+                    friendPlayer.Id,
                     resourceType,
                     newBalance);
 
                 // send GiftEvent to friend if online
-                var isDeviceAlreadyConnected = _webSocketConnectionManager.IsExists(player.DeviceId);
-                var response = new WebSocketServerClientDTO
+                var isFriendPlayerOnline = _webSocketConnectionManager.IsDeviceExists(friendPlayer.DeviceId);
+                if (isFriendPlayerOnline)
                 {
-                    Event = WebSocketServerClientEventCode.SendGift.ToString(),
-                    SendGiftResponse = new SendGiftResponse
+                    var friendSession = _webSocketConnectionManager.GetByDevice(friendPlayer.DeviceId);
+                    var response = new WebSocketServerClientDTO
                     {
-                        CurrentResourceBalance = newBalance
-                    }
-                };
-                await SendResponseAsync(response);
+                        Event = WebSocketServerClientEventCode.SendGift.ToString(),
+                        SendGiftResponse = new SendGiftResponse
+                        {
+                            FromPlayerId = session.Player.Id,
+                            ResourceType = resourceType.ToString(),
+                            ResourceValue = model.SendGiftRequest.ResourceValue.Value,
+                            CurrentResourceBalance = newBalance
+                        }
+                    };
+                    await SendResponseAsync(friendSession, response);
+                }
+
             }
 
             async Task SendUnSuccessResponseAsync(string message)
@@ -238,18 +247,19 @@ namespace TheGame.BLL
                 var response = new WebSocketServerClientDTO
                 {
                     RequestId = model.RequestId,
-                    EventCode = model.EventCode,
+                    Event = model.Event,
                     Success = false,
                     Message = message
                 };
-                await SendResponseAsync(response);
+                await SendResponseAsync(session, response);
             }
 
-            async Task SendResponseAsync(WebSocketServerClientDTO response)
+            async Task SendResponseAsync(SocketConnectionSession session, WebSocketServerClientDTO response)
             {
                 var message = JsonSerializer.Serialize(response, new JsonSerializerOptions { IgnoreNullValues = true, WriteIndented = true });
                 await _webSocketConnectionManager.SendMessageAsync(session, message);
             }
+
         }
 
         public async Task ProcessOnClientWebSocketConnectionOpenedAsync(SocketConnectionSession session)
@@ -260,7 +270,7 @@ namespace TheGame.BLL
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, string.Empty);
             }
         }
 
@@ -269,13 +279,14 @@ namespace TheGame.BLL
             try
             {
                 _logger.LogInformation($"{session} disconnected");
-                if (session.HasConnectedPlayer)
+                if (session.IsLoggedIn)
                 {
                     await _dal.SetOnlineStatusAsync(session.Player.Id, false);
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, string.Empty);
             }
         }
 

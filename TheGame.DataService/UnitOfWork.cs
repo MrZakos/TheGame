@@ -28,7 +28,7 @@ namespace TheGame.DataService
             Resources = resourceRepository;
         }
 
-        public async Task CompleteAsync()
+        public async Task CommitAsync()
         {
             await _context.SaveChangesAsync();
         }

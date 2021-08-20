@@ -29,7 +29,7 @@ namespace TheGame.UnitTests
                 IsOnline = false
             };
             await unitOfWork.Players.Add(player);
-            await unitOfWork.CompleteAsync();
+            await unitOfWork.CommitAsync();
             player = await unitOfWork.Players.GetById(player.Id);
             Assert.NotNull(player);
         }
@@ -43,11 +43,11 @@ namespace TheGame.UnitTests
                 IsOnline = false
             };
             await unitOfWork.Players.Add(player);
-            await unitOfWork.CompleteAsync();
+            await unitOfWork.CommitAsync();
             player = await unitOfWork.Players.GetById(player.Id);
             Assert.NotNull(player);
             await unitOfWork.Players.Delete(player.Id);
-            await unitOfWork.CompleteAsync();
+            await unitOfWork.CommitAsync();
             player = await unitOfWork.Players.GetById(player.Id);
             Assert.Null(player);
         }

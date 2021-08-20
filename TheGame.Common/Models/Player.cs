@@ -24,6 +24,6 @@ namespace TheGame.Common.Models
 
         public virtual List<Resource> Resources { get; set; } = new List<Resource>();
 
-        public override string ToString() =>$"[{Id}-{DeviceId}]";
+        public override string ToString() =>$"[id={Id} deviceId={DeviceId}]";
     } 
 }
