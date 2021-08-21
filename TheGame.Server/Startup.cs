@@ -7,7 +7,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using TheGame.BootstrapService;
 
@@ -31,7 +30,7 @@ namespace TheGame.Server
         {
             services.AddControllers();                                                              // 
             services.Configure<KestrelServerOptions>(Configuration.GetSection("Kestrel"));          // configure KestrelServerOptions from appSettings
-            Bootstrap.RegisterServices(Configuration, services);                                     // register our application services
+            Bootstrap.RegisterServices(Configuration, services);                                    // register our application services
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,6 +40,7 @@ namespace TheGame.Server
             {
                 app.UseDeveloperExceptionPage();
             }
+
             // enable websockets
             var webSocketOptions = new WebSocketOptions()
             {
@@ -59,13 +59,14 @@ namespace TheGame.Server
             // Serilog takes over all default server logs
             app.UseSerilogRequestLogging();
 
-            // regular middleware
+            // regular .net core middlewares
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
         }
     }
 }

@@ -1,5 +1,8 @@
-﻿using System.Threading.Tasks;
-using TheGame.ClientConsole;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading.Tasks;
+using TheGame.BootstrapService;
+using TheGame.Common.Interfaces;
 
 namespace TheGame.ClientConsoleRunner
 {
@@ -8,12 +11,17 @@ namespace TheGame.ClientConsoleRunner
 
         static async Task Main(string[] args)
         {
-            var client = new TheGameClientConsole();
-            await client.Start("wss://localhost:44329/connect");
+            try
+            {
+                Bootstrap.ConsoleApplicationBoostrap();
+                var client = ActivatorUtilities.GetServiceOrCreateInstance<IClient>(Bootstrap.IHost.Services);
+                await client.Start();
+            }
+            catch (System.Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex);
+            }
         }
-    }
-
-      
-
-    
+    }          
 }

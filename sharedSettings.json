@@ -1,25 +1,37 @@
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=MyDbServer; Database=OnlineShopDb; Trusted_Connection=True; MultipleActiveResultSets=true"
+    "Sqlite": "Filename=TheGameDB.sqlite"
   },
   "Serilog": {
+    "Using": [
+      "Serilog.Sinks.Console",
+      "Serilog.Sinks.File"
+    ],
     "MinimumLevel": {
-      "Default": "Information",
+      "Default": "Verbose",
       "Override": {
-        "Microsoft": "Warning",
-        "Microsoft.Hosting.Lifetime": "Information"
+        "Microsoft": "Error",
+        "Microsoft.Extensions": "Information",
+        "System": "Debug",
+        "Microsoft.EntityFrameworkCore.Database.Command": "Error"
       }
     },
     "WriteTo": [
       {
         "Name": "File",
         "Args": {
-          "path": "./logs/log-.txt",
-          "rollingInterval": "Day"
+          "path": "logs/log.txt",
+          "rollingInterval": "Day",
+          "rollOnFileSizeLimit": true,
+          "fileSizeLimitBytes": "512000",
+          "retainedFileCountLimit": 3,
+          "formatter": "Serilog.Formatting.Compact.CompactJsonFormatter, Serilog.Formatting.Compact"
         }
       }
-    ],
-    "Test": "test",
-    "LoopTimes": 15
+    ]
+  },
+  "ClientOptions": {
+    "WebSocketURL": "wss://localhost:44329/connect",
+    "KeepAliveIntervalSeconds": 5
   }
 }

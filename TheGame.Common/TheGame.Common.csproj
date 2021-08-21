@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <Folder Include="Extensions\" />
-    <Folder Include="Interfaces\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>
 

@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TheGame.BLL\TheGame.BLL.csproj" />
+    <ProjectReference Include="..\TheGame.ClientConsole\TheGame.ClientConsole.csproj" />
     <ProjectReference Include="..\TheGame.Common\TheGame.Common.csproj" />
     <ProjectReference Include="..\TheGame.DataService\TheGame.DataService.csproj" />
   </ItemGroup>

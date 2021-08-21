@@ -7,20 +7,21 @@ using TheGame.DAL;
 using TheGame.WebSocketService;
 using System.Text.Json;
 using System.Linq;
+using TheGame.Common.Interfaces;
 
 namespace TheGame.BLL
 {
     /// <summary>
-    /// Business Logic Layer - handle websocket connection and events
+    /// handle websocket connection and events
     /// </summary>
-    public class BusinessLogicLayer
+    public class WebSocketConnectionsHandler : IWebSocketHandler
     {
-        private readonly ILogger<BusinessLogicLayer> _logger;
+        private readonly ILogger<WebSocketConnectionsHandler> _logger;
         private readonly DataAccessLayer _dal;
         private readonly WebSocketConnectionManager _webSocketConnectionManager;
 
-        public BusinessLogicLayer(
-            ILogger<BusinessLogicLayer> log,
+        public WebSocketConnectionsHandler(
+            ILogger<WebSocketConnectionsHandler> log,
             DataAccessLayer dataAccessLayer,
             WebSocketConnectionManager webSocketConnectionManager)
         {
@@ -31,6 +32,9 @@ namespace TheGame.BLL
             _dal.EnsureCreated().GetAwaiter().GetResult();
         }
 
+        /// <summary>
+        /// subscribe to web sockets events
+        /// </summary>
         public void SubscribeToWebSocketsEvents()
         {
             _webSocketConnectionManager.Subscribe(connection =>
@@ -42,18 +46,30 @@ namespace TheGame.BLL
             });
         }
 
-        public async Task ProcessAcceptWebSocketRequestAsync(HttpContext httpContext)
+        /// <summary>
+        /// Accept a web socket connection
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <returns></returns>
+        public async Task HandleWebSocketRequestAsync(HttpContext httpContext)
         {
-            var context = httpContext;
-            var isSocketRequest = context.WebSockets.IsWebSocketRequest;
-
-            if (!isSocketRequest)
+            try
             {
-                _logger.LogInformation($"a non web socket request incoming from {httpContext.Connection.RemoteIpAddress}, response with status code 400");
-                context.Response.StatusCode = 400;
-                return;
+                var context = httpContext;
+                var isSocketRequest = context.WebSockets.IsWebSocketRequest;
+
+                if (!isSocketRequest)
+                {
+                    _logger.LogInformation($"a non web socket request incoming from {httpContext.Connection.RemoteIpAddress}, response with status code 400");
+                    context.Response.StatusCode = 400;
+                    return;
+                }
+                await _webSocketConnectionManager.HandleWebSocketRequestAsync(httpContext);
             }
-            await _webSocketConnectionManager.HandleWebSocketRequestAsync(httpContext);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, nameof(HandleWebSocketRequestAsync));
+            }
         }
 
         public async Task ProcessOnClientWebSocketMessageReceivedAsync(SocketConnectionSession session, string message)
@@ -61,7 +77,7 @@ namespace TheGame.BLL
             var model = default(WebSocketServerClientDTO);
             try
             {
-                _logger.LogInformation($"{session} message received {message}");
+                _logger.LogInformation($"{session} message received [{message}]");
 
                 // model validation
                 model = JsonSerializer.Deserialize<WebSocketServerClientDTO>(message);
@@ -259,7 +275,6 @@ namespace TheGame.BLL
                 var message = JsonSerializer.Serialize(response, new JsonSerializerOptions { IgnoreNullValues = true, WriteIndented = true });
                 await _webSocketConnectionManager.SendMessageAsync(session, message);
             }
-
         }
 
         public async Task ProcessOnClientWebSocketConnectionOpenedAsync(SocketConnectionSession session)

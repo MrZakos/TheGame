@@ -1,32 +1,32 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using TheGame.BLL;
+using TheGame.Common.Interfaces;
 
 namespace TheGame.Server.Controllers
 {
     /// <summary>
-    /// WebSocketController - handles websocket initiation
+    /// WebSocket Controller - expose /connect route which allow websocket connections
     /// </summary>
     [ApiController]
     public class WebSocketController : ControllerBase
     {
         private readonly ILogger<WebSocketController> _logger;
-        private readonly BusinessLogicLayer _bll;
+        private readonly IWebSocketHandler _websocketHandler;
 
         public WebSocketController(
             ILogger<WebSocketController> logger,
-            BusinessLogicLayer businessLogicLayer)
+            IWebSocketHandler websocketHandler)
         {
             _logger = logger;
-            _bll = businessLogicLayer;
+            _websocketHandler = websocketHandler;
         }
 
         [Route("/connect")]
         [HttpGet]
         public async Task Connect()
         {
-            await _bll.ProcessAcceptWebSocketRequestAsync(HttpContext);
+            await _websocketHandler.HandleWebSocketRequestAsync(HttpContext);
         }
     }
 }
