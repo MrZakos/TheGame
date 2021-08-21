@@ -9,7 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.UnitTests", "TheGam
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{567B7133-BF42-4B72-BE59-D36B59889A5C}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\Users\Zakos\Desktop\1.JPG = ..\..\Users\Zakos\Desktop\1.JPG
 		README.md = README.md
 	EndProjectSection
 EndProject
