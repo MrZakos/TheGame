@@ -15,5 +15,6 @@ namespace TheGame.Common.Models
         public UpdateResourcesResponse UpdateResourcesResponse { get; set; }
         public SendGiftRequest SendGiftRequest { get; set; }
         public SendGiftResponse SendGiftResponse { get; set; }
+        public GiftEvent GiftEvent { get; set; }
     }
 }

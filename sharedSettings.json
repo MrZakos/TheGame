@@ -31,7 +31,7 @@
     ]
   },
   "ClientOptions": {
-    "WebSocketURL": "wss://localhost:44329/connect",
+    "WebSocketURL": "wss://localhost:5001/connect",
     "KeepAliveIntervalSeconds": 5
   }
 }

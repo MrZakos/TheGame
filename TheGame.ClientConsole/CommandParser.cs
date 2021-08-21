@@ -4,6 +4,9 @@ using TheGame.Common.Models;
 
 namespace TheGame.ClientConsole
 {
+    /// <summary>
+    /// Parse a string and prepares a WebSocketServerClientDTO model
+    /// </summary>
     public class CommandParser
     {
         public readonly string Command;
@@ -13,7 +16,7 @@ namespace TheGame.ClientConsole
 
         public CommandParser(string inputCommand)
         {
-            Command = inputCommand.Trim();
+            Command = inputCommand != null ? inputCommand.Trim() : string.Empty;
             Parse();
         }
 
@@ -50,7 +53,7 @@ namespace TheGame.ClientConsole
                             Event = WebSocketServerClientEventCode.UpdateResources.ToString(),
                             UpdateResourcesRequest = new UpdateResourcesRequest
                             {
-                                ResourceType = split[1],
+                                ResourceType = Enum.Parse(typeof(ResourceType), split[1], true).ToString(),
                                 ResourceValue = resourceValue
                             }
                         };
@@ -68,7 +71,7 @@ namespace TheGame.ClientConsole
                             SendGiftRequest = new SendGiftRequest
                             {
                                 FriendPlayerId = friendId,
-                                ResourceType = split[2],
+                                ResourceType = Enum.Parse(typeof(ResourceType), split[2], true).ToString(),
                                 ResourceValue = resourceValue
                             }
                         };
@@ -76,9 +79,7 @@ namespace TheGame.ClientConsole
                     break;
                 default:
                     break;
-            }
-
-
+            }            
         }
     }
 }

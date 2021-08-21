@@ -126,7 +126,7 @@ namespace TheGame.BLL
                     model.LoginRequest.DeviceId != Guid.Empty;
                 if (!isValidModel)
                 {
-                    await SendUnSuccessResponseAsync(Common.Constants.STRING_InvalidRequest);
+                    await SendUnSuccessResponseAsync(string.Format(Common.Constants.STRING_InvalidRequest, "UUID is invalid or missing"));
                     return;
                 }
 
@@ -225,12 +225,13 @@ namespace TheGame.BLL
                 var isFriendPlayerExists = friendPlayer != null;
                 if (!isFriendPlayerExists)
                 {
-                    await SendUnSuccessResponseAsync(Common.Constants.STRING_PlayerDoesNotExists);
+                    await SendUnSuccessResponseAsync(string.Format(Common.Constants.STRING_FORMAT_PlayerDoesNotExists, model.SendGiftRequest.FriendPlayerId.Value));
                     return;
                 }
                 // update friend player resource
                 var friendPlayerResource = friendPlayer.Resources.FirstOrDefault(x => x.ResourceType == resourceType);
                 var friendPlayerResourceExists = friendPlayerResource != null;
+                double? previousBalance = friendPlayerResourceExists ? friendPlayerResource.ResourceValue : null;
                 var newBalance = friendPlayerResourceExists ? (friendPlayerResource.ResourceValue + model.SendGiftRequest.ResourceValue.Value) : model.SendGiftRequest.ResourceValue.Value;
                 await _dal.AddOrUpdateResourceForPlayerAsync(
                     friendPlayer.Id,
@@ -242,19 +243,37 @@ namespace TheGame.BLL
                 if (isFriendPlayerOnline)
                 {
                     var friendSession = _webSocketConnectionManager.GetByDevice(friendPlayer.DeviceId);
-                    var response = new WebSocketServerClientDTO
+                    var responseToFriend = new WebSocketServerClientDTO
                     {
-                        Event = WebSocketServerClientEventCode.SendGift.ToString(),
-                        SendGiftResponse = new SendGiftResponse
+                        Event = WebSocketServerClientEventCode.GiftEvent.ToString(),
+                        Success = true,
+                        GiftEvent = new GiftEvent
                         {
                             FromPlayerId = session.Player.Id,
                             ResourceType = resourceType.ToString(),
                             ResourceValue = model.SendGiftRequest.ResourceValue.Value,
+                            PreviousResourceBalance = previousBalance.HasValue ? previousBalance.Value : 0,
                             CurrentResourceBalance = newBalance
                         }
                     };
-                    await SendResponseAsync(friendSession, response);
+                    await SendResponseAsync(friendSession, responseToFriend);
                 }
+
+                // update sender on success operation
+                var responseToSender = new WebSocketServerClientDTO
+                {
+                    RequestId = model.RequestId,
+                    Event = WebSocketServerClientEventCode.SendGift.ToString(),
+                    Success = true,
+                    SendGiftResponse = new SendGiftResponse
+                    {
+                        Message = $"gift sent ! your friend is {(isFriendPlayerOnline ? "online" : "offline")}"
+                    }
+                };
+                await SendResponseAsync(session, responseToSender);
+
+
+
 
             }
 

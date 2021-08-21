@@ -5,6 +5,7 @@
         Login,
         UpdateResources,
         SendGift,
+        GiftEvent,
         Message
     }
 }

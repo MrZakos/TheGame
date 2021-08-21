@@ -22,6 +22,7 @@ namespace TheGame.UnitTests
         }
 
         [TestCase("login 00000000-0000-0000-1000-000000000000")]
+        [TestCase("login 00000000-0000-0000-1000-000000000001")]
         [TestCase("update coin 50")]
         [TestCase("update roll 500")]
         [TestCase("gift 1 coin 250")]

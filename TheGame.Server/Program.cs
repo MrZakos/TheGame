@@ -20,9 +20,9 @@ namespace TheGame.Server
                 {
                     // add sharedSettings configurations file
                     var env = hostingContext.HostingEnvironment;
-                    var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sharedSettings.json");  
+                    var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sharedSettings.json");
                     config.AddJsonFile(path, optional: true);
-                    config.AddEnvironmentVariables();                 
+                    config.AddEnvironmentVariables();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
