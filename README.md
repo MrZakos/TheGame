@@ -4,35 +4,37 @@
 
 A websocket game implementation using .NET Core 5 (ASP Kestral)
 
-## Installation
-
+# Run
+you need to run the server(TheGame.Server) and then run many clints(TheGame.ClientConsoleRunner) as you wish
+- option A : Visual Studio
+- option B : using CLI
 ```sh
-cd dillinger
-npm i
-node app
+cd TheGame.Server
+dotnet run
 ```
 
-For production environments...
-
 ```sh
-npm install --production
-NODE_ENV=production node app
+cd TheGame.ClientConsoleRunner
+dotnet run
 ```
-
-## Server API
-| API/Event | Input | Response | Notes |
-| ------ | ------ |------| ------ |
-| Login | DeviceId(UUID) | PlayerId | if a deviceId is already connected , disconnect it |
-| UpdateResources | ResourceType ResourceValue | resource balance ||
-| SendGift | PlayerId ResourceType ResourceValue |success message to sender + GiftEvent message to receiver if online  | |
-| GiftEvent | FromPlayerId ResourceType ResourceValue PreviousBalance CurrentBalance  | - |  event by server
 
 # Solution Strcture
 
+| Solution | Info |
+| ------ | ------ |
+| TheGame.Server | (ASP.NET CORE) The WebsSocket server |
+| TheGame.ClientConsole | (library) The client (console) ,  https://github.com/Marfusios/websocket-client is used for websocket handling|
+| TheGame.ClientConsoleRunner | (console application) Runs the client |
+| TheGame.Common | (library) Shared models,interfaces,constants |
+| TheGame.BootstrapService | (library) Responsible of initiation(configurations & logger setup) for a console application , also has common DI registration function for both console & web projects
+| TheGame.WebSocketService | (library) Expose ```WebSocketConnectionManager``` class which handles web socket connections |
+| TheGame.DataService | (library) Sqlite database handler with entity framework (code first) , repository & unit of work pattern  |
+| TheGame.DAL| (library) Data Access Layer - database operations logic on top of TheGame.DatService   |
+| TheGame.BLL| (library) Business Logic Layer - contains ```WebSocketConnectionsHandler``` which handles and process ```TheGame``` workflow |
+| TheGame.UnitTests | NUnit |
+
 - All projects are .NET Core 5 Runtime
-- Shared/sharedSettings.json is shared and used for all executable applciations (Server/ClientConsoleRunner/UnitTests).
-  - Avoid configurations duplications
-  - Contains configurations for Sqlite / Serilog / Client 
+- appsettings configure Sqlite/Serilog/Client  settings
 
   ```sh
   {
@@ -73,22 +75,17 @@ NODE_ENV=production node app
    }
   }
   ```
-  
- 
 
-| Solution | Info |
-| ------ | ------ |
-| TheGame.Server | (ASP.NET CORE) The WebsSocket server , using Kestral which is the basic   |
-| TheGame.ClientConsole | (library) The client (console) , using https://github.com/Marfusios/websocket-client for websocket handling|
-| TheGame.ClientConsoleRunner | (console application) runs the client |
-| TheGame.Common | (library) shared models,interface,constants |
-| TheGame.BootstrapService | (library) initiation for non web application (configurations & logger loading) and shared DI registration for both web and non web projects
-| TheGame.WebSocketService | (library) contain ```WebSocketConnectionManager``` class which handles web socket connections |
-| TheGame.DataService | (library) Handles Sqlite database with entity framework (code first) , repository & unit of work patterns  |
-| TheGame.DAL| (library) Data Access Layer - database operations logic on top of TheGame.DatService   |
-| TheGame.BLL| (library) Business Logic Layer - contains ```WebSocketConnectionsHandler``` which handles and process ```TheGame``` workflow |
-| TheGame.UnitTests | NUnit |
 
+## Server API
+
+| API/Event | Input | Response | Notes |
+| ------ | ------ |------| ------ |
+| Login | DeviceId(UUID) | PlayerId | if a deviceId is already connected , disconnect it |
+| UpdateResources | ResourceType ResourceValue | resource balance ||
+| SendGift | PlayerId ResourceType ResourceValue |success message to sender + GiftEvent message to receiver if online  | |
+| GiftEvent | FromPlayerId ResourceType ResourceValue PreviousBalance CurrentBalance  | - |  event by server
+- ResourceType = coins/rolls
 
 # DB Browser for SQLite
 [DB Browser for SQLite](https://sqlitebrowser.org/) can be used for exploring database data
@@ -247,7 +244,8 @@ cond(no)->op
 
 
 
-# Client example
+# Client
+![""](3.jpg?raw=true "")
 ![""](2.png?raw=true "")
 
 
