@@ -5,7 +5,7 @@
 A websocket game implementation using .NET Core 5 (ASP Kestral)
 
 # Run
-you need to run the server(TheGame.Server) and then run many clints(TheGame.ClientConsoleRunner) as you wish
+you need to run the server(TheGame.Server) and then run many clients(TheGame.ClientConsoleRunner) as you wish
 - option A : Visual Studio
 - option B : using CLI
 ```sh
@@ -82,10 +82,12 @@ dotnet run
 | API/Event | Input | Response | Notes |
 | ------ | ------ |------| ------ |
 | Login | DeviceId(UUID) | PlayerId | if a deviceId is already connected , disconnect it |
-| UpdateResources | ResourceType ResourceValue | resource balance ||
-| SendGift | PlayerId ResourceType ResourceValue |success message to sender + GiftEvent message to receiver if online  | |
+| UpdateResources | ResourceType ResourceValue | resource balance | updates resource value,need to be loggged in |
+| SendGift | PlayerId ResourceType ResourceValue |success message to sender + GiftEvent message to receiver if online  | need to be loggged in |
 | GiftEvent | FromPlayerId ResourceType ResourceValue PreviousBalance CurrentBalance  | - |  event by server
 - ResourceType = coins/rolls
+- ResourceValue = number
+- PlayerId = number
 
 # DB Browser for SQLite
 [DB Browser for SQLite](https://sqlitebrowser.org/) can be used for exploring database data
