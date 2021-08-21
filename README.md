@@ -238,7 +238,7 @@ GiftEvent
 
 
 # Client
-![""](3.jpg?raw=true "")
+![""](3.JPG?raw=true "")
 
 ![""](2.png?raw=true "")
 
