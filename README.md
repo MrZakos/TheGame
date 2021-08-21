@@ -4,6 +4,29 @@
 
 A websocket game implementation using .NET Core 5 (ASP Kestral)
 
+## Installation
+
+```sh
+cd dillinger
+npm i
+node app
+```
+
+For production environments...
+
+```sh
+npm install --production
+NODE_ENV=production node app
+```
+
+## Server API
+| API/Event | Input | Response | Notes |
+| ------ | ------ |------| ------ |
+| Login | DeviceId(UUID) | PlayerId | if a deviceId is already connected , disconnect it |
+| UpdateResources | ResourceType ResourceValue | resource balance ||
+| SendGift | PlayerId ResourceType ResourceValue |success message to sender + GiftEvent message to receiver if online  | |
+| GiftEvent | FromPlayerId ResourceType ResourceValue PreviousBalance CurrentBalance  | - |  event by server
+
 # Solution Strcture
 
 - All projects are .NET Core 5 Runtime
@@ -45,7 +68,7 @@ A websocket game implementation using .NET Core 5 (ASP Kestral)
     ]
   },
   "ClientOptions": {
-    "WebSocketURL": "wss://localhost:44329/connect",
+    "WebSocketURL": "wss://localhost:5001/connect",
     "KeepAliveIntervalSeconds": 5
    }
   }
@@ -59,7 +82,7 @@ A websocket game implementation using .NET Core 5 (ASP Kestral)
 | TheGame.ClientConsole | (library) The client (console) , using https://github.com/Marfusios/websocket-client for websocket handling|
 | TheGame.ClientConsoleRunner | (console application) runs the client |
 | TheGame.Common | (library) shared models,interface,constants |
-| TheGame.BootstrapService | (library) boostrap for a non web applcation(console/unit-test) and also has ```RegisterServices()``` function which is used to register all DI services for both web & non web applications  |
+| TheGame.BootstrapService | (library) initiation for non web application (configurations & logger loading) and shared DI registration for both web and non web projects
 | TheGame.WebSocketService | (library) contain ```WebSocketConnectionManager``` class which handles web socket connections |
 | TheGame.DataService | (library) Handles Sqlite database with entity framework (code first) , repository & unit of work patterns  |
 | TheGame.DAL| (library) Data Access Layer - database operations logic on top of TheGame.DatService   |
@@ -72,7 +95,7 @@ A websocket game implementation using .NET Core 5 (ASP Kestral)
 # Server Web Socket Connection URL
 
 ```sh
-wss://localhost:44329/connect
+wss://localhost:5001/connect
 ```
 
 # Request/Response Payloads Examples
@@ -207,11 +230,25 @@ GiftEvent
 }
 ```
 
+```flow
+st=>start: Login
+op=>operation: Login operation
+cond=>condition: Successful Yes or No?
+e=>end: To admin
 
-![Alt text](1.JPG?raw=true "Title")
+st->op->cond
+cond(yes)->e
+cond(no)->op
+``` 
 
-# Client Example
+# Server
+![""](1.JPG?raw=true "")
 
+
+
+
+# Client example
+![""](2.png?raw=true "")
 
 
 ## License

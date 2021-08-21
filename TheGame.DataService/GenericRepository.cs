@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace TheGame.DataService
 {
     /// <summary>
-    /// GenericRepository
+    /// Generic Repository
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class GenericRepository<T> : IGenericRepository<T> where T : class

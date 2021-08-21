@@ -12,7 +12,7 @@ using TheGame.Common.Interfaces;
 namespace TheGame.BLL
 {
     /// <summary>
-    /// handle websocket connection and events
+    /// Handle websocket connections
     /// </summary>
     public class WebSocketConnectionsHandler : IWebSocketHandler
     {
@@ -33,7 +33,7 @@ namespace TheGame.BLL
         }
 
         /// <summary>
-        /// subscribe to web sockets events
+        /// subscribe to websockets events
         /// </summary>
         public void SubscribeToWebSocketsEvents()
         {
@@ -47,7 +47,8 @@ namespace TheGame.BLL
         }
 
         /// <summary>
-        /// Accept a web socket connection
+        /// HandleWebSocketRequestAsync
+        /// accept & connect to an incoming websocket request
         /// </summary>
         /// <param name="httpContext"></param>
         /// <returns></returns>
@@ -72,6 +73,13 @@ namespace TheGame.BLL
             }
         }
 
+        /// <summary>
+        /// ProcessOnClientWebSocketMessageReceivedAsync
+        /// Handles all clients` messages
+        /// </summary>
+        /// <param name="session"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task ProcessOnClientWebSocketMessageReceivedAsync(SocketConnectionSession session, string message)
         {
             var model = default(WebSocketServerClientDTO);
@@ -81,7 +89,6 @@ namespace TheGame.BLL
 
                 // model validation
                 model = JsonSerializer.Deserialize<WebSocketServerClientDTO>(message);
-
                 if (model == null)
                 {
                     await SendUnSuccessResponseAsync(Common.Constants.STRING_InvalidRequest);
@@ -115,6 +122,7 @@ namespace TheGame.BLL
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"{session} processing message failed");
+                await SendUnSuccessResponseAsync($"server error ({ex.Message})");
             }
 
             async Task ProcessLoginAsync()
@@ -126,7 +134,7 @@ namespace TheGame.BLL
                     model.LoginRequest.DeviceId != Guid.Empty;
                 if (!isValidModel)
                 {
-                    await SendUnSuccessResponseAsync(string.Format(Common.Constants.STRING_InvalidRequest, "UUID is invalid or missing"));
+                    await SendUnSuccessResponseAsync(string.Format(Common.Constants.STRING_FORMAT_InvalidRequest, "UUID is invalid or missing"));
                     return;
                 }
 
@@ -181,7 +189,8 @@ namespace TheGame.BLL
                 }
 
                 // update player's resource & send him the balance
-                await _dal.AddOrUpdateResourceForPlayerAsync(session.Player.Id, resourceType, model.UpdateResourcesRequest.ResourceValue.Value);
+                await _dal.SetResourceForPlayerAsync(session.Player.Id, resourceType, model.UpdateResourcesRequest.ResourceValue.Value);
+                var player = await _dal.GetPlayerAsync(session.Player.Id);
                 var response = new WebSocketServerClientDTO
                 {
                     RequestId = model.RequestId,
@@ -189,7 +198,7 @@ namespace TheGame.BLL
                     Success = true,
                     UpdateResourcesResponse = new UpdateResourcesResponse
                     {
-                        Balance = model.UpdateResourcesRequest.ResourceValue.Value
+                        Balance = player.Resources.First(x => x.ResourceType == resourceType).ResourceValue
                     }
                 };
                 await SendResponseAsync(session, response);
@@ -220,6 +229,19 @@ namespace TheGame.BLL
                     return;
                 }
 
+                // a player can't gift himself
+                if (model.SendGiftRequest.FriendPlayerId.Value == session.Player.Id)
+                {
+                    await SendResponseAsync(session, new WebSocketServerClientDTO
+                    {
+                        RequestId = model.RequestId,
+                        Event = WebSocketServerClientEventCode.SendGift.ToString(),
+                        Success = false,
+                        Message = $"nice try ! you can't gift to your self"
+                    });
+                    return;
+                }
+
                 // find friend player
                 var friendPlayer = await _dal.GetPlayerAsync(model.SendGiftRequest.FriendPlayerId.Value);
                 var isFriendPlayerExists = friendPlayer != null;
@@ -228,12 +250,13 @@ namespace TheGame.BLL
                     await SendUnSuccessResponseAsync(string.Format(Common.Constants.STRING_FORMAT_PlayerDoesNotExists, model.SendGiftRequest.FriendPlayerId.Value));
                     return;
                 }
+
                 // update friend player resource
                 var friendPlayerResource = friendPlayer.Resources.FirstOrDefault(x => x.ResourceType == resourceType);
                 var friendPlayerResourceExists = friendPlayerResource != null;
                 double? previousBalance = friendPlayerResourceExists ? friendPlayerResource.ResourceValue : null;
                 var newBalance = friendPlayerResourceExists ? (friendPlayerResource.ResourceValue + model.SendGiftRequest.ResourceValue.Value) : model.SendGiftRequest.ResourceValue.Value;
-                await _dal.AddOrUpdateResourceForPlayerAsync(
+                await _dal.SetResourceForPlayerAsync(
                     friendPlayer.Id,
                     resourceType,
                     newBalance);
@@ -242,6 +265,7 @@ namespace TheGame.BLL
                 var isFriendPlayerOnline = _webSocketConnectionManager.IsDeviceExists(friendPlayer.DeviceId);
                 if (isFriendPlayerOnline)
                 {
+                    friendPlayer = await _dal.GetPlayerAsync(model.SendGiftRequest.FriendPlayerId.Value);
                     var friendSession = _webSocketConnectionManager.GetByDevice(friendPlayer.DeviceId);
                     var responseToFriend = new WebSocketServerClientDTO
                     {
@@ -253,7 +277,7 @@ namespace TheGame.BLL
                             ResourceType = resourceType.ToString(),
                             ResourceValue = model.SendGiftRequest.ResourceValue.Value,
                             PreviousResourceBalance = previousBalance.HasValue ? previousBalance.Value : 0,
-                            CurrentResourceBalance = newBalance
+                            CurrentResourceBalance = friendPlayer.Resources.First(x => x.ResourceType == resourceType).ResourceValue
                         }
                     };
                     await SendResponseAsync(friendSession, responseToFriend);
@@ -271,10 +295,6 @@ namespace TheGame.BLL
                     }
                 };
                 await SendResponseAsync(session, responseToSender);
-
-
-
-
             }
 
             async Task SendUnSuccessResponseAsync(string message)
@@ -296,6 +316,11 @@ namespace TheGame.BLL
             }
         }
 
+        /// <summary>
+        /// ProcessOnClientWebSocketConnectionOpenedAsync
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
         public async Task ProcessOnClientWebSocketConnectionOpenedAsync(SocketConnectionSession session)
         {
             try
@@ -308,6 +333,11 @@ namespace TheGame.BLL
             }
         }
 
+        /// <summary>
+        /// ProcessOnClientWebSocketConnectionClosedAsync
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
         public async Task ProcessOnClientWebSocketConnectionClosedAsync(SocketConnectionSession session)
         {
             try
@@ -324,21 +354,43 @@ namespace TheGame.BLL
             }
         }
 
+        /// <summary>
+        ///  OnWebSocketOpenedAsync
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
         public async Task OnWebSocketOpenedAsync(SocketConnectionSession session)
         {
             await ProcessOnClientWebSocketConnectionOpenedAsync(session);
         }
 
+        /// <summary>
+        /// OnWebSocketClosedAsync
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
         public async Task OnWebSocketClosedAsync(SocketConnectionSession session)
         {
             await ProcessOnClientWebSocketConnectionClosedAsync(session);
         }
 
+        /// <summary>
+        /// OnWebSocketMessageAsync
+        /// </summary>
+        /// <param name="session"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task OnWebSocketMessageAsync(SocketConnectionSession session, string message)
         {
             await ProcessOnClientWebSocketMessageReceivedAsync(session, message);
         }
 
+        /// <summary>
+        /// OnWebSocketBinaryMessageAsync
+        /// </summary>
+        /// <param name="session"></param>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public async Task OnWebSocketBinaryMessageAsync(SocketConnectionSession session, byte[] bytes)
         {
             throw new NotImplementedException();

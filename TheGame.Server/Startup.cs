@@ -1,19 +1,23 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.IO;
+using System.Net;
 using TheGame.BootstrapService;
 
 namespace TheGame.Server
 {
     /// <summary>
-    /// Webapp startup/boostrap of the server , register services & initial configurations
+    /// Server boostrap , load services & configurations
     /// </summary>
     public class Startup
     {
@@ -34,11 +38,30 @@ namespace TheGame.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                // Global Error Handling - just log the error
+                app.UseExceptionHandler(errorApp =>
+                {
+                    errorApp.Run(async context =>
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        var exceptionObject = context.Features.Get<IExceptionHandlerFeature>();
+                        if (null != exceptionObject)
+                        {
+                            logger.LogError(exceptionObject.Error, string.Empty);
+                            var errorMessage = $"<b>Exception Error: {exceptionObject.Error.Message} </b> {exceptionObject.Error.StackTrace}";
+                            await context.Response.WriteAsync(errorMessage).ConfigureAwait(false);
+                        }
+                    });
+                });
+                app.UseHsts();
             }
 
             // enable websockets
@@ -66,7 +89,6 @@ namespace TheGame.Server
             {
                 endpoints.MapControllers();
             });
-
         }
     }
 }

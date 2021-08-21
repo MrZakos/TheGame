@@ -5,7 +5,7 @@ using TheGame.Common.Models;
 namespace TheGame.ClientConsole
 {
     /// <summary>
-    /// Parse a string and prepares a WebSocketServerClientDTO model
+    /// Parse a string command to a WebSocketServerClientDTO model
     /// </summary>
     public class CommandParser
     {

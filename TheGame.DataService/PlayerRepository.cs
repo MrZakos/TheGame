@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TheGame.Common.Models;
 
@@ -33,7 +32,7 @@ namespace TheGame.DataService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{Repo} All function error", typeof(PlayerRepository));
+                _logger.LogError(ex, $"{typeof(PlayerRepository)}.{nameof(All)}");
                 return new List<Player>();
             }
         }
@@ -52,7 +51,7 @@ namespace TheGame.DataService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{Repo} Delete function error", typeof(PlayerRepository));
+                _logger.LogError(ex, $"{typeof(PlayerRepository)}.{nameof(Delete)}");
                 return false;
             }
         }

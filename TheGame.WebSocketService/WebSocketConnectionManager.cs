@@ -171,7 +171,7 @@ namespace TheGame.WebSocketService
         }
 
         /// <summary>
-        /// Recieve client's incoming - message /connection clsoed
+        /// Recieve client's event - message/connection closed
         /// </summary>
         /// <param name="socket"></param>
         /// <param name="handler"></param>

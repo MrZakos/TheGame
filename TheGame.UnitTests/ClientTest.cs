@@ -2,9 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using TheGame.BootstrapService;
-using TheGame.DataService;
-using System;
-using System.Linq;
 using TheGame.Common.Interfaces;
 using TheGame.ClientConsole;
 
@@ -47,6 +44,5 @@ namespace TheGame.UnitTests
             var commandParser = new CommandParser(command);
             Assert.IsFalse(commandParser.IsValid);
         }
-
     }
 }

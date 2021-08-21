@@ -26,10 +26,10 @@ namespace TheGame.UnitTests
             var b = await dal.IsPlayerExistsAsync(50000);
             var c = await dal.FindPlayerByDeviceIdAsync(player.DeviceId);
             var d = await dal.IsPlayerByDeviceIdExistsAsync(System.Guid.NewGuid());
-            await dal.AddOrUpdateResourceForPlayerAsync(player.Id, Common.Models.ResourceType.Coin, 10);
-            await dal.AddOrUpdateResourceForPlayerAsync(player.Id, Common.Models.ResourceType.Coin, 50);
-            await dal.AddOrUpdateResourceForPlayerAsync(1, Common.Models.ResourceType.Roll, 50);
-            await dal.AddOrUpdateResourceForPlayerAsync(1, Common.Models.ResourceType.Roll, 200);
+            await dal.SetResourceForPlayerAsync(player.Id, Common.Models.ResourceType.Coin, 10);
+            await dal.SetResourceForPlayerAsync(player.Id, Common.Models.ResourceType.Coin, 50);
+            await dal.SetResourceForPlayerAsync(1, Common.Models.ResourceType.Roll, 50);
+            await dal.SetResourceForPlayerAsync(1, Common.Models.ResourceType.Roll, 200);
         }
     }
 }

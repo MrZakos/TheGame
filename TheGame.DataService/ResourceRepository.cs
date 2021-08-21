@@ -27,7 +27,7 @@ namespace TheGame.DataService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{Repo} All function error", typeof(PlayerRepository));
+                _logger.LogError(ex, $"{typeof(ResourceRepository)}.{nameof(All)}");
                 return new List<Resource>();
             }
         }
@@ -46,7 +46,7 @@ namespace TheGame.DataService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{Repo} Delete function error", typeof(PlayerRepository));
+                _logger.LogError(ex, $"{typeof(ResourceRepository)}.{nameof(Delete)}");
                 return false;
             }
         }

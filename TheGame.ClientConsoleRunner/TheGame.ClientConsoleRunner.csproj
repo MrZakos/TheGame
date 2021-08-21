@@ -6,12 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\sharedSettings.json" Link="sharedSettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TheGame.BootstrapService\TheGame.BootstrapService.csproj" />
     <ProjectReference Include="..\TheGame.ClientConsole\TheGame.ClientConsole.csproj" />
   </ItemGroup>

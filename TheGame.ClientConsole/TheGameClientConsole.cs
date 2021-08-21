@@ -37,7 +37,6 @@ namespace TheGame.ClientConsole
             Console.CancelKeyPress += ConsoleOnCancelKeyPress;
             ShowTheGameDrawing();
             ShowWelcome();
-            Console.WriteLine(string.Empty);
             var factory = new Func<ClientWebSocket>(() => new ClientWebSocket
             {
                 Options =
